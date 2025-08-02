@@ -20,8 +20,10 @@ function hideError() {
         })
     }
     // 隐藏查看按钮
-    if (document.querySelector('tr > td > a')) {
-        console.log('has actionBtns')
+    if (
+        document.querySelector('tr > td > a') &&
+        document.querySelector('tr > td > a').innerText.includes('查看')
+    ) {
         const actionBtns = document.querySelectorAll('tr > td > a')
         console.log('actionBtns', actionBtns)
         actionBtns.forEach((element) => {
@@ -33,7 +35,10 @@ function hideError() {
         console.log('no actionBtns')
     }
     // 隐藏打印按钮
-    if (document.querySelector('.hollowThemeButton')) {
+    if (
+        document.querySelector('.hollowThemeButton') &&
+        document.querySelector('.hollowThemeButton').innerText.includes('打印')
+    ) {
         const printBtn = document.querySelectorAll('.hollowThemeButton')
         printBtn.forEach((element) => {
             if (element.innerText.includes('打印')) {
@@ -42,14 +47,18 @@ function hideError() {
         })
     }
     // replace logo
-    if (document.querySelector('div.titleModel')) {
+    if (
+        document.querySelector('div.titleModel') &&
+        document.querySelector('div.titleModel').innerHTML.includes('yundou')
+    ) {
         var titleModel = document.querySelector('div.titleModel')
         var newElement = document.createElement('span')
         newElement.textContent = '导税智能记账软件'
         newElement.style.fontSize = '20px'
         titleModel.removeChild(titleModel.firstChild)
-        titleModel.appendChild(newElement)
+        titleModel.prepend(newElement)
         titleModel.style.display = 'flex'
+        console.log('replace logo')
     }
 }
 

@@ -1,19 +1,135 @@
 version: 2.1
 
+orbs:
+    node: circleci/node@5.0.2
+    rust: circleci/rust@1.0.0
+
+parameters:
+    build_macos_aarch64:
+        type: boolean
+        default: true
+    build_macos_x86_64:
+        type: boolean
+        default: true
+    build_linux_x86_64:
+        type: boolean
+        default: true
+    build_linux_aarch64:
+        type: boolean
+        default: true
+    build_windows_x86_64:
+        type: boolean
+        default: true
+    build_windows_aarch64:
+        type: boolean
+        default: true
+
 jobs:
-    build_and_test:
-        docker:
-            - image: cimg/rust:latest # 使用 CircleCI 提供的 Rust 镜像
+    publish-tauri:
+        parameters:
+            platform:
+                type: string
+            target:
+                type: string
+            args:
+                type: string
+        executor:
+            name: << parameters.platform >>
         steps:
             - checkout
-            - run: rustup update
-            - run: rustc --version
-            - run: cargo --version
-            - run: cargo build --verbose
-            - run: cargo test --verbose
+
+            - run:
+                  name: Install rust target
+                  command: rustup target add << parameters.target >>
+
+            - node/install:
+                  install-pnpm: true
+                  node-version: '20'
+
+            - run:
+                  name: Install Rust stable
+                  command: |
+                      rustup install stable
+                      <<#if (eq parameters.platform "macos")>>rustup target add aarch64-apple-darwin x86_64-apple-darwin<</if>>
+
+            - when:
+                  condition: << parameters.platform == "linux" >>
+                  steps:
+                      - run:
+                            name: Install dependencies (Ubuntu only)
+                            command: |
+                                sudo apt-get update
+                                sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+            - run:
+                  name: Install frontend dependencies
+                  command: pnpm install
+
+            - run:
+                  name: Publish with Tauri
+                  command: |
+                      # You'll need to replace this with the equivalent CircleCI step for your Tauri action
+                      # The original GitHub Action was using a custom action (Sjj1024/tauri-zhaction)
+                      # You might need to implement this functionality directly in the script
+                      echo "Implement Tauri publishing here with args: << parameters.args >>"
+                      # Example:
+                      # cargo tauri build << parameters.args >>
+                      # Release steps would go here
 
 workflows:
     version: 2
-    build_test:
+    publish:
         jobs:
-            - build_and_test
+            - publish-tauri:
+                  name: publish-macos-aarch64
+                  platform: macos
+                  target: aarch64-apple-darwin
+                  args: '--target aarch64-apple-darwin'
+                  context:
+                      - GITHUB_TOKEN
+                  when: << pipeline.parameters.build_macos_aarch64 >>
+
+            - publish-tauri:
+                  name: publish-macos-x86_64
+                  platform: macos
+                  target: x86_64-apple-darwin
+                  args: '--target x86_64-apple-darwin'
+                  context:
+                      - GITHUB_TOKEN
+                  when: << pipeline.parameters.build_macos_x86_64 >>
+
+            - publish-tauri:
+                  name: publish-linux-x86_64
+                  platform: linux
+                  target: x86_64-unknown-linux-gnu
+                  args: ''
+                  context:
+                      - GITHUB_TOKEN
+                  when: << pipeline.parameters.build_linux_x86_64 >>
+
+            - publish-tauri:
+                  name: publish-linux-aarch64
+                  platform: linux
+                  target: aarch64-unknown-linux-gnu
+                  args: ''
+                  context:
+                      - GITHUB_TOKEN
+                  when: << pipeline.parameters.build_linux_aarch64 >>
+
+            - publish-tauri:
+                  name: publish-windows-x86_64
+                  platform: windows
+                  target: x86_64-pc-windows-msvc
+                  args: ''
+                  context:
+                      - GITHUB_TOKEN
+                  when: << pipeline.parameters.build_windows_x86_64 >>
+
+            - publish-tauri:
+                  name: publish-windows-aarch64
+                  platform: windows
+                  target: aarch64-pc-windows-msvc
+                  args: '--target aarch64-pc-windows-msvc'
+                  context:
+                      - GITHUB_TOKEN
+                  when: << pipeline.parameters.build_windows_aarch64 >>
