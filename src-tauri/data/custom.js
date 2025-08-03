@@ -19,6 +19,27 @@ function hideError() {
         newTitle.style.textAlign = 'center'
         titleModel.prepend(newTitle)
     }
+    // 隐藏小程序
+    if (document.querySelector('ul > li.topLevel.xcx.collapsed')) {
+        document.querySelector('ul > li.topLevel.xcx.collapsed').style.display =
+            'none'
+    }
+    // 隐藏客服按钮
+    if (document.querySelector('#zhichiBtnBox')) {
+        document.querySelector('#zhichiBtnBox').style.display = 'none'
+    }
+    // 隐藏帮助文档
+    const firstLi = document.querySelector(
+        'a[href="https://help.yundoukuaiji.com"][target="_blank"]'
+    )
+    if (firstLi) {
+        // 移除最后一个li
+        const lastLi = firstLi.parentNode.parentNode.querySelectorAll('li')
+        if (lastLi) {
+            lastLi[lastLi.length - 1].remove()
+        }
+        firstLi.parentNode.remove()
+    }
     // 隐藏logo
     if (document.querySelector('div.ydLogo')) {
         document.querySelector('div.ydLogo').style.display = 'none'
@@ -233,7 +254,7 @@ function rightHandle() {
 
 window.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded')
-    // rightHandle()
+    rightHandle()
     hideError()
     const targetNode = document.body
     // 配置观察选项
