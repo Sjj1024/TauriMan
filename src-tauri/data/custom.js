@@ -1,5 +1,11 @@
 const { invoke } = window.__TAURI__.core
 
+let targetNode = null
+// 配置观察选项
+const config = {
+    childList: true,
+    subtree: true,
+}
 let observer = null
 
 function hideError() {
@@ -52,7 +58,8 @@ function hideError() {
         document.querySelectorAll('.barEntrance').forEach((element) => {
             if (
                 element.innerHTML.includes('新手指导') ||
-                element.innerHTML.includes('在线客服')
+                element.innerHTML.includes('在线客服') ||
+                element.innerHTML.includes('系统通知')
             ) {
                 element.style.display = 'none'
             }
@@ -129,6 +136,10 @@ function rightHandle() {
       <span>返回</span>
     `
         backBtn.addEventListener('click', function () {
+            if (observer === null) {
+                observer = new MutationObserver(hideError)
+                observer.observe(targetNode, config)
+            }
             window.history.back()
             menu.classList.add('fade-out')
             setTimeout(() => document.body.removeChild(menu), 200)
@@ -252,20 +263,24 @@ function rightHandle() {
     document.head.appendChild(style)
 }
 
+window.addEventListener('unload', () => {
+    console.log('unload load')
+    // hideError()
+})
+
+window.addEventListener('load', () => {
+    console.log('load')
+    // rightHandle()
+    // hideError()
+})
+
 window.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded')
     rightHandle()
     hideError()
-    const targetNode = document.body
-    // 配置观察选项
-    const config = {
-        childList: true,
-        subtree: true,
-    }
+    targetNode = document.body
     if (observer === null) {
-        observer = new MutationObserver(() => {
-            hideError()
-        })
+        observer = new MutationObserver(hideError)
         observer.observe(targetNode, config)
     }
 })
