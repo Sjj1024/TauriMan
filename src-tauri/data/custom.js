@@ -1,5 +1,7 @@
 const { invoke } = window.__TAURI__.core
 
+let observer = null
+
 function hideError() {
     // 隐藏备案等
     if (document.querySelector('footer')) {
@@ -78,122 +80,83 @@ function hideError() {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded')
-    hideError()
-    const targetNode = document.body
-    // 配置观察选项
-    const config = {
-        childList: true,
-        subtree: true,
-    }
-    const observer = new MutationObserver((mutationsList, observer) => {
-        for (const mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                hideError()
-            }
-        }
-    })
-    observer.observe(targetNode, config)
-})
-
-// 监听点击事件
-const hookClick = (e) => {
-    console.log('click a')
-    const origin = e.target.closest('a')
-    if (origin && origin.href && origin.target === '_blank') {
+function rightHandle() {
+    document.addEventListener('contextmenu', function (e) {
         e.preventDefault()
-        console.log('handle origin', origin)
-        location.href = origin.href
-    } else {
-        console.log('not handle origin', origin)
-    }
-}
+        if (observer) {
+            observer.disconnect()
+            observer = null
+        }
+        // 移除已存在的菜单（防止重复）
+        const existingMenu = document.querySelector('.custom-context-menu')
+        if (existingMenu) {
+            document.body.removeChild(existingMenu)
+        }
+        // 创建自定义菜单
+        const menu = document.createElement('div')
+        menu.className = 'custom-context-menu'
+        menu.style.left = e.clientX + 'px'
+        menu.style.top = e.clientY + 'px'
 
-document.addEventListener('click', hookClick, { capture: true })
-
-window.open = function (url, target, features) {
-    console.log('open', url, target, features)
-    // location.href = url
-    if (url.includes('baiwang.com')) {
-        invoke('open_url', { url: url })
-    } else {
-        location.href = url
-    }
-}
-
-document.addEventListener('contextmenu', function (e) {
-    // e.preventDefault()
-    // 移除已存在的菜单（防止重复）
-    const existingMenu = document.querySelector('.custom-context-menu')
-    if (existingMenu) {
-        document.body.removeChild(existingMenu)
-    }
-    // 创建自定义菜单
-    const menu = document.createElement('div')
-    menu.className = 'custom-context-menu'
-    menu.style.left = e.clientX + 'px'
-    menu.style.top = e.clientY + 'px'
-
-    // 添加返回按钮
-    const backBtn = document.createElement('div')
-    backBtn.className = 'menu-item'
-    backBtn.innerHTML = `
+        // 添加返回按钮
+        const backBtn = document.createElement('div')
+        backBtn.className = 'menu-item'
+        backBtn.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
       </svg>
       <span>返回</span>
     `
-    backBtn.addEventListener('click', function () {
-        window.history.back()
-        menu.classList.add('fade-out')
-        setTimeout(() => document.body.removeChild(menu), 200)
-    })
+        backBtn.addEventListener('click', function () {
+            window.history.back()
+            menu.classList.add('fade-out')
+            setTimeout(() => document.body.removeChild(menu), 200)
+        })
 
-    // 添加刷新按钮
-    const refreshBtn = document.createElement('div')
-    refreshBtn.className = 'menu-item'
-    refreshBtn.innerHTML = `
+        // 添加刷新按钮
+        const refreshBtn = document.createElement('div')
+        refreshBtn.className = 'menu-item'
+        refreshBtn.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
       </svg>
       <span>刷新</span>
     `
-    refreshBtn.addEventListener('click', function () {
-        window.location.reload()
-        menu.classList.add('fade-out')
-        setTimeout(() => document.body.removeChild(menu), 200)
+        refreshBtn.addEventListener('click', function () {
+            window.location.reload()
+            menu.classList.add('fade-out')
+            setTimeout(() => document.body.removeChild(menu), 200)
+        })
+
+        // 添加分隔线
+        const separator = document.createElement('div')
+        separator.className = 'menu-separator'
+
+        menu.appendChild(backBtn)
+        menu.appendChild(separator)
+        menu.appendChild(refreshBtn)
+
+        document.body.appendChild(menu)
+
+        // 点击其他地方关闭菜单
+        const closeMenu = function () {
+            menu.classList.add('fade-out')
+            setTimeout(() => {
+                if (document.body.contains(menu)) {
+                    document.body.removeChild(menu)
+                }
+                document.removeEventListener('click', closeMenu)
+            }, 200)
+        }
+
+        setTimeout(() => {
+            document.addEventListener('click', closeMenu)
+        }, 10)
     })
 
-    // 添加分隔线
-    const separator = document.createElement('div')
-    separator.className = 'menu-separator'
-
-    menu.appendChild(backBtn)
-    menu.appendChild(separator)
-    menu.appendChild(refreshBtn)
-
-    document.body.appendChild(menu)
-
-    // 点击其他地方关闭菜单
-    const closeMenu = function () {
-        menu.classList.add('fade-out')
-        setTimeout(() => {
-            if (document.body.contains(menu)) {
-                document.body.removeChild(menu)
-            }
-            document.removeEventListener('click', closeMenu)
-        }, 200)
-    }
-
-    setTimeout(() => {
-        document.addEventListener('click', closeMenu)
-    }, 10)
-})
-
-// 添加CSS样式
-const style = document.createElement('style')
-style.textContent = `
+    // 添加CSS样式
+    const style = document.createElement('style')
+    style.textContent = `
   .custom-context-menu {
     position: fixed;
     background: white;
@@ -265,4 +228,48 @@ style.textContent = `
     }
   }
   `
-document.head.appendChild(style)
+    document.head.appendChild(style)
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded')
+    // rightHandle()
+    hideError()
+    const targetNode = document.body
+    // 配置观察选项
+    const config = {
+        childList: true,
+        subtree: true,
+    }
+    if (observer === null) {
+        observer = new MutationObserver(() => {
+            hideError()
+        })
+        observer.observe(targetNode, config)
+    }
+})
+
+// 监听点击事件
+const hookClick = (e) => {
+    console.log('click a')
+    const origin = e.target.closest('a')
+    if (origin && origin.href && origin.target === '_blank') {
+        e.preventDefault()
+        console.log('handle origin', origin)
+        location.href = origin.href
+    } else {
+        console.log('not handle origin', origin)
+    }
+}
+
+document.addEventListener('click', hookClick, { capture: true })
+
+window.open = function (url, target, features) {
+    console.log('open', url, target, features)
+    // location.href = url
+    if (url.includes('baiwang.com')) {
+        invoke('open_url', { url: url })
+    } else {
+        location.href = url
+    }
+}
