@@ -106,6 +106,10 @@ function hideError() {
         titleModel.style.display = 'flex'
         console.log('replace logo')
     }
+    // replace yundou
+    if (document.querySelector('div.icon-yundou')) {
+        document.querySelector('div.icon-yundou').style.display = 'none'
+    }
 }
 
 function rightHandle() {
