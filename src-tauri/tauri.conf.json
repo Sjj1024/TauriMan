@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
-    "productName": "导税智能测试版",
+    "productName": "导税智能记账软件",
     "version": "../package.json",
-    "identifier": "com.daoshuizhineng.app",
+    "identifier": "com.daoshuizhinengjizhang.app",
     "build": {
         "frontendDist": "../src"
     },

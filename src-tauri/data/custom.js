@@ -110,6 +110,14 @@ function hideError() {
     if (document.querySelector('div.icon-yundou')) {
         document.querySelector('div.icon-yundou').style.display = 'none'
     }
+    // replace hot
+    if (
+        document.querySelector('div.headBar > div.fr.rightBar.clearfix > div')
+    ) {
+        document.querySelector(
+            'div.headBar > div.fr.rightBar.clearfix > div'
+        ).style.display = 'none'
+    }
 }
 
 function rightHandle() {
