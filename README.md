@@ -2,8 +2,8 @@
 
 This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
 
-为什么不能和PakePlus集成？
-因为PakePLus本身包含了PP的ui内容，如果合在一起，会导致新的项目存在多余的PP内容，导致包体积过大，和性能下降。
+为什么不能和 pp 集成？
+因为 pp 本身包含了 PP 的 ui 内容，如果合在一起，会导致新的项目存在多余的 PP 内容，导致包体积过大，和性能下降。
 
 ## Recommended IDE Setup
 
@@ -12,6 +12,7 @@ This template should help get you started developing with Tauri in vanilla HTML,
 # Add TauriApi
 
 在前端文件夹项目中添加依赖
+
 ```shell
 pnpm add -D @tauri-apps/cli@latest
 
@@ -27,7 +28,6 @@ pnpm add -D @tauri-apps/cli@latest
 "@tauri-apps/plugin-window-state": "^2.2.1",
 ```
 
+# 在 debug 或发布目录添加 config 文件夹
 
-# 在debug或发布目录添加config文件夹
-
-TauriMan会主动加载config文件夹下的配置文件，用于配置TauriMan的功能。
+TauriMan 会主动加载 config 文件夹下的配置文件，用于配置 TauriMan 的功能。
